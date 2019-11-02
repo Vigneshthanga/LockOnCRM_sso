@@ -60,7 +60,7 @@ def callback_handling():
 
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri='http://127.0.0.1:5000/callback')
+    return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/callback')
 
 def requires_auth(f):
   @wraps(f)
