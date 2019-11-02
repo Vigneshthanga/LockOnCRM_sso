@@ -1,0 +1,225 @@
+diff --git a/crm_admin/__init__.py b/crm_admin/__init__.py
+deleted file mode 100644
+index f50e958..0000000
+--- a/crm_admin/__init__.py
++++ /dev/null
+@@ -1,6 +0,0 @@
+-from flask import Flask
+-
+-crm_admin = Flask(__name__)
+-
+-from crm_admin import routes
+-crm_admin.secret_key = 'the random string'
+diff --git a/crm_admin/__pycache__/__init__.cpython-37.pyc b/crm_admin/__pycache__/__init__.cpython-37.pyc
+deleted file mode 100644
+index 10e92eb..0000000
+Binary files a/crm_admin/__pycache__/__init__.cpython-37.pyc and /dev/null differ
+diff --git a/crm_admin/__pycache__/routes.cpython-37.pyc b/crm_admin/__pycache__/routes.cpython-37.pyc
+deleted file mode 100644
+index 65ddf94..0000000
+Binary files a/crm_admin/__pycache__/routes.cpython-37.pyc and /dev/null differ
+diff --git a/crm_admin/routes.py b/crm_admin/routes.py
+deleted file mode 100644
+index 93456bd..0000000
+--- a/crm_admin/routes.py
++++ /dev/null
+@@ -1,87 +0,0 @@
+-from crm_admin import crm_admin
+-
+-from functools import wraps
+-import json
+-from os import environ as env
+-from werkzeug.exceptions import HTTPException
+-
+-from dotenv import load_dotenv, find_dotenv
+-from flask import Flask
+-from flask import jsonify
+-from flask import redirect
+-from flask import render_template
+-from flask import session
+-from flask import url_for
+-from authlib.flask.client import OAuth
+-from six.moves.urllib.parse import urlencode
+-
+-app = Flask(__name__)
+-app = Flask(__name__, template_folder='templates')
+-
+-oauth = OAuth(app)
+-
+-load_dotenv()
+-
+-auth0 = oauth.register(
+-    'auth0',
+-    client_id='JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz',
+-    client_secret='KHVCDtbG89J0xmKKbDJ7RcpCQ31lzxG4gZX22jtb1dkH3FzVvxxOv2etmXO61_ju',
+-    api_base_url='https://django-app1.auth0.com',
+-    access_token_url='https://django-app1.auth0.com/oauth/token',
+-    authorize_url='https://django-app1.auth0.com/authorize',
+-    client_kwargs={
+-        'scope': 'openid profile email',
+-    },
+-)
+-
+-
+-#@crm_admin.route('/')
+-@crm_admin.route('/index')
+-def index():
+-    return "Hello, World!"
+-
+-@crm_admin.route('/callback')
+-def callback_handling():
+-    # Handles response from token endpoint
+-    auth0.authorize_access_token()
+-    resp = auth0.get('userinfo')
+-    userinfo = resp.json()
+-
+-    # Store the user information in flask session.
+-    session['jwt_payload'] = userinfo
+-    session['profile'] = {
+-        'user_id': userinfo['sub'],
+-        'name': userinfo['name'],
+-        'picture': userinfo['picture']
+-    }
+-    return redirect('/dashboard')
+-
+-@crm_admin.route('/login')
+-def login():
+-    return auth0.authorize_redirect(redirect_uri='http://127.0.0.1:5000/callback')
+-
+-def requires_auth(f):
+-  @wraps(f)
+-  def decorated(*args, **kwargs):
+-    if 'profile' not in session:
+-      # Redirect to Login page here
+-      return redirect('/login')
+-    return f(*args, **kwargs)
+-
+-  return decorated
+-
+-@crm_admin.route('/dashboard')
+-#@crm_admin.route('/')
+-@requires_auth
+-def dashboard():
+-    return render_template('dashboard.html',
+-                           userinfo=session['profile'],
+-                           userinfo_pretty=json.dumps(session['jwt_payload'], indent=4))
+-@crm_admin.route('/logout')
+-def logout():
+-    # Clear session stored data
+-    session.clear()
+-    # Redirect user to logout endpoint
+-    params = {'returnTo': url_for('home', _external=True), 'client_id': 'JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz'}
+-    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
+-
+diff --git a/crm_admin/template/home.html b/crm_admin/template/home.html
+deleted file mode 100644
+index 6e8699b..0000000
+--- a/crm_admin/template/home.html
++++ /dev/null
+@@ -1,6 +0,0 @@
+-<div class="login-box auth0-box before">
+-    <img src="https://i.cloudup.com/StzWWrY34s.png" />
+-    <h3>Auth0 Example</h3>
+-    <p>Zero friction identity infrastructure, built for developers</p>
+-    <a class="btn btn-primary btn-lg btn-login btn-block" href="/login">Log In</a>
+-</div>
+diff --git a/crm_admin/templates/dashboard.html b/crm_admin/templates/dashboard.html
+deleted file mode 100644
+index 38f5e2e..0000000
+--- a/crm_admin/templates/dashboard.html
++++ /dev/null
+@@ -1,7 +0,0 @@
+-<div class="logged-in-box auth0-box logged-in">
+-    <h1 id="logo"><img src="//cdn.auth0.com/samples/auth0_logo_final_blue_RGB.png" /></h1>
+-    <img class="avatar" src="{{userinfo['picture']}}"/>
+-    <h2>Welcome {{userinfo['name']}}</h2>
+-    <pre>{{userinfo_pretty}}</pre>
+-    <a class="btn btn-primary btn-lg btn-logout btn-block" href="/logout">Logout</a>
+-</div>
+diff --git a/crmadmin.py b/crmadmin.py
+deleted file mode 100644
+index d8ddbdf..0000000
+--- a/crmadmin.py
++++ /dev/null
+@@ -1,81 +0,0 @@
+-from crm_admin import crm_admin
+-
+-'''
+-from functools import wraps
+-import json
+-from os import environ as env
+-from werkzeug.exceptions import HTTPException
+-
+-from dotenv import load_dotenv, find_dotenv
+-from flask import Flask
+-from flask import jsonify
+-from flask import redirect
+-from flask import render_template
+-from flask import session
+-from flask import url_for
+-from authlib.flask.client import OAuth
+-from six.moves.urllib.parse import urlencode
+-
+-app = Flask(__name__)
+-
+-oauth = OAuth(app)
+-
+-load_dotenv()
+-
+-auth0 = oauth.register(
+-    'auth0',
+-    client_id='JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz',
+-    client_secret=env['AUTH0_CLIENT_SECRET'],
+-    api_base_url='https://django-app1.auth0.com',
+-    access_token_url='https://django-app1.auth0.com/oauth/token',
+-    authorize_url='https://django-app1.auth0.com/authorize',
+-    client_kwargs={
+-        'scope': 'openid profile email',
+-    },
+-)
+-
+-@app.route('/callback')
+-def callback_handling():
+-    # Handles response from token endpoint
+-    auth0.authorize_access_token()
+-    resp = auth0.get('userinfo')
+-    userinfo = resp.json()
+-
+-    # Store the user information in flask session.
+-    session['jwt_payload'] = userinfo
+-    session['profile'] = {
+-        'user_id': userinfo['sub'],
+-        'name': userinfo['name'],
+-        'picture': userinfo['picture']
+-    }
+-    return redirect('/dashboard')
+-
+-@app.route('/login')
+-def login():
+-    return auth0.authorize_redirect(redirect_uri='/dashboard')
+-
+-def requires_auth(f):
+-  @wraps(f)
+-  def decorated(*args, **kwargs):
+-    if 'profile' not in session:
+-      # Redirect to Login page here
+-      return redirect('/')
+-    return f(*args, **kwargs)
+-
+-  return decorated
+-
+-@app.route('/dashboard')
+-@requires_auth
+-def dashboard():
+-    return render_template('dashboard.html',
+-                           userinfo=session['profile'],
+-                           userinfo_pretty=json.dumps(session['jwt_payload'], indent=4))
+-@app.route('/logout')
+-def logout():
+-    # Clear session stored data
+-    session.clear()
+-    # Redirect user to logout endpoint
+-    params = {'returnTo': url_for('home', _external=True), 'client_id': 'JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz'}
+-    return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
+-'''
+-

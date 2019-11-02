@@ -1,4 +1,4 @@
-from crm_admin import crm_admin
+#from app import app
 
 from functools import wraps
 import json
@@ -18,6 +18,8 @@ from six.moves.urllib.parse import urlencode
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
 
+app.secret_key = "the random string"
+
 oauth = OAuth(app)
 
 load_dotenv()
@@ -36,11 +38,11 @@ auth0 = oauth.register(
 
 
 #@crm_admin.route('/')
-@crm_admin.route('/index')
+@app.route('/index')
 def index():
     return "Hello, World!"
 
-@crm_admin.route('/callback')
+@app.route('/callback')
 def callback_handling():
     # Handles response from token endpoint
     auth0.authorize_access_token()
@@ -56,7 +58,7 @@ def callback_handling():
     }
     return redirect('/dashboard')
 
-@crm_admin.route('/login')
+@app.route('/login')
 def login():
     return auth0.authorize_redirect(redirect_uri='http://127.0.0.1:5000/callback')
 
@@ -70,14 +72,14 @@ def requires_auth(f):
 
   return decorated
 
-@crm_admin.route('/dashboard')
+@app.route('/dashboard')
 #@crm_admin.route('/')
 @requires_auth
 def dashboard():
     return render_template('dashboard.html',
                            userinfo=session['profile'],
                            userinfo_pretty=json.dumps(session['jwt_payload'], indent=4))
-@crm_admin.route('/logout')
+@app.route('/logout')
 def logout():
     # Clear session stored data
     session.clear()
@@ -85,3 +87,6 @@ def logout():
     params = {'returnTo': url_for('home', _external=True), 'client_id': 'JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz'}
     return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
+
+if __name__ == "__main__":
+    app.run()
