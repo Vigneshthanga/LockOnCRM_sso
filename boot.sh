@@ -6,4 +6,4 @@
 #fi
 
 # run web server
-exec gunicorn -b 0.0.0.0:5000 --access-logfile - --error-logfile - app:app
+exec gunicorn -b 0.0.0.0:5000 --access-logfile /var/log/gunicorn-access.log --error-logfile /var/log/error.log - app:app
