@@ -18,6 +18,8 @@ from six.moves.urllib.parse import urlencode
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
 
+app.config.from_pyfile('config.py')
+
 app.secret_key = "the random string"
 
 oauth = OAuth(app)
