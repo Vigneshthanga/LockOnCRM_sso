@@ -6,4 +6,4 @@
 #fi
 
 # run web server
-exec gunicorn -b 0.0.0.0:5000 --access-logfile ~/lockoncrm_sso/gunicorn-access.log --error-logfile ~/lockoncrm_sso/error.log app:app
+exec gunicorn -b 0.0.0.0:5000 --access-logfile /home/vagrant/lockoncrm_sso/gunicorn-access.log --error-logfile /home/vagrant/lockoncrm_sso/error.log app:app
