@@ -24,7 +24,7 @@ from six.moves.urllib.parse import urlencode
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
 
-config_name = os.environ.get('FLASK_CONFIG', 'dev')
+'''config_name = os.environ.get('FLASK_CONFIG', 'dev')
 app.config.from_object(getattr(config, config_name.title() + 'Config'))
 
 db = SQLAlchemy(app)
@@ -37,8 +37,8 @@ if message_queue:
     socketio = SocketIO(message_queue=message_queue)
 else:
     socketio = None
-
-#app.secret_key = "the random string"
+'''
+app.secret_key = "the random string"
 
 oauth = OAuth(app)
 
@@ -109,4 +109,5 @@ def logout():
 
 
 if __name__ == "__main__":
+    app.debug = True
     app.run()
