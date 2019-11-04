@@ -4,9 +4,15 @@ from functools import wraps
 import json
 from os import environ as env
 from werkzeug.exceptions import HTTPException
+import config
 
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask
+from flask_httpauth import HTTPBasicAuth
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
+from flask_socketio import SocketIO
+
 from flask import jsonify
 from flask import redirect
 from flask import render_template
@@ -18,9 +24,21 @@ from six.moves.urllib.parse import urlencode
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
 
-app.config.from_pyfile('config.py')
+config_name = os.environ.get('FLASK_CONFIG', 'dev')
+app.config.from_object(getattr(config, config_name.title() + 'Config'))
 
-app.secret_key = "the random string"
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+basic_auth = HTTPBasicAuth()
+
+message_queue = 'redis://' + os.environ['REDIS'] if 'REDIS' in os.environ \
+    else None
+if message_queue:
+    socketio = SocketIO(message_queue=message_queue)
+else:
+    socketio = None
+
+#app.secret_key = "the random string"
 
 oauth = OAuth(app)
 
