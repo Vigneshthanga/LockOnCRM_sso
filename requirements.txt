@@ -28,4 +28,4 @@ SQLAlchemy==1.1.5
 urllib3==1.24.2
 websocket-client==0.40.0
 Werkzeug==0.15.3
-lockoncrm-common==0.4
+git+git://github.com/Vigneshthanga/lockoncrm_common@master
