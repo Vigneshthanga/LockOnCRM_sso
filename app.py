@@ -58,11 +58,11 @@ auth0 = oauth.register(
 
 
 #@crm_admin.route('/')
-@app.route('/index')
+@app.route('/login/index')
 def index():
     return "Hello, World!"
 
-@app.route('/callback')
+@app.route('/login/callback')
 def callback_handling():
     # Handles response from token endpoint
     auth0.authorize_access_token()
@@ -80,7 +80,7 @@ def callback_handling():
 
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/callback')
+    return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/login/callback')
 
 def requires_auth(f):
   @wraps(f)
@@ -92,14 +92,14 @@ def requires_auth(f):
 
   return decorated
 
-@app.route('/dashboard')
+@app.route('/login/dashboard')
 #@crm_admin.route('/')
 @requires_auth
 def dashboard():
     return render_template('dashboard.html',
                            userinfo=session['profile'],
                            userinfo_pretty=json.dumps(session['jwt_payload'], indent=4))
-@app.route('/logout')
+@app.route('/login/logout')
 def logout():
     # Clear session stored data
     session.clear()
