@@ -82,6 +82,10 @@ def callback_handling():
 def login():
     return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/login/callback')
 
+#@app.route('/login/univ')
+#def univ():
+#    return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/login/callback')
+
 def requires_auth(f):
   @wraps(f)
   def decorated(*args, **kwargs):
@@ -104,7 +108,7 @@ def logout():
     # Clear session stored data
     session.clear()
     # Redirect user to logout endpoint
-    params = {'returnTo': url_for('dashboard', _external=True), 'client_id': 'JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz'}
+    params = {'returnTo': url_for('logout', _external=True), 'client_id': 'JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz'}
     return redirect(auth0.api_base_url + '/v2/logout?' + urlencode(params))
 
 
