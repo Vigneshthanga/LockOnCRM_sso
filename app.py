@@ -20,6 +20,7 @@ from flask import session
 from flask import url_for
 from authlib.flask.client import OAuth
 from six.moves.urllib.parse import urlencode
+import http.client
 
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
@@ -58,9 +59,19 @@ auth0 = oauth.register(
 
 
 #@crm_admin.route('/')
-@app.route('/login/index')
+@app.route('/login/signup')
 def index():
-    return "Hello, World!"
+    render_template('signup.html')
+
+    conn = http.client.HTTPSConnection("")
+    payload = "{\"client_id\": \"JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz\",\"email\": \"$('#signup-email').val()\",\"password\": \"$('#signup-password').val()\",\"connection\": \"YOUR_CONNECTION_NAME\",\"name\": \"$('#name').val()\",\"user_metadata\": {\"color\": \"red\"}}"
+    headers = { 'content-type': "application/json" }
+    conn.request("POST", "/django-app1.auth0.com/dbconnections/signup", payload, headers)
+    res = conn.getresponse()
+    data = res.read()
+
+    print(data.decode("utf-8"))
+    return redirect('/login')
 
 @app.route('/login/callback')
 def callback_handling():
