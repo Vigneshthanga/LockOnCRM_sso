@@ -22,6 +22,17 @@ from authlib.flask.client import OAuth
 from six.moves.urllib.parse import urlencode
 import http.client
 
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.validators import DataRequired
+
+
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    remember_me = BooleanField('Remember Me')
+    submit = SubmitField('Sign In')
+
 app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
 
@@ -61,17 +72,20 @@ auth0 = oauth.register(
 #@crm_admin.route('/')
 @app.route('/login/signup')
 def index():
-    render_template('signup.html', title='Sign Up')
+    form = LoginForm()
+    return render_template('signup.html', title='Sign Up', form=form)
 
-    conn = http.client.HTTPSConnection("")
-    payload = "{\"client_id\": \"JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz\",\"email\": \"$('#signup-email').val()\",\"password\": \"$('#signup-password').val()\",\"connection\": \"Username-Password-Authentication\",\"name\": \"$('#name').val()\",\"user_metadata\": {\"color\": \"red\"}}"
-    headers = { 'content-type': "application/json" }
-    conn.request("POST", "/django-app1.auth0.com/dbconnections/signup", payload, headers)
-    res = conn.getresponse()
-    data = res.read()
+    #render_template('signup.html', title='Sign Up')
 
-    print(data.decode("utf-8"))
-    return redirect('/login')
+    #conn = http.client.HTTPSConnection("")
+    #payload = "{\"client_id\": \"JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz\",\"email\": \"$('#signup-email').val()\",\"password\": \"$('#signup-password').val()\",\"connection\": \"Username-Password-Authentication\",\"name\": \"$('#name').val()\",\"user_metadata\": {\"color\": \"red\"}}"
+    #headers = { 'content-type': "application/json" }
+    #conn.request("POST", "/django-app1.auth0.com/dbconnections/signup", payload, headers)
+    #res = conn.getresponse()
+    #data = res.read()
+
+    #print(data.decode("utf-8"))
+    #return redirect('/login')
 
 @app.route('/login/callback')
 def callback_handling():
