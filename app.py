@@ -26,6 +26,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import DataRequired
 
+import logging
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -73,9 +74,15 @@ auth0 = oauth.register(
 @app.route('/login/signup')
 def index():
     form = LoginForm()
-    return render_template('signup.html', title='Sign Up', form=form)
+    conn = http.client.HTTPSConnection("")
+    payload = "{\"client_id\": \"JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz\",\"email\": \"$('#signup-email').val()\",\"password\": \"$('#signup-password').val()\",\"connection\": \"Username-Password-Authentication\",\"name\": \"$('#name').val()\",\"user_metadata\": {\"color\": \"red\"}}"
+    conn.request("POST", "/django-app1.auth0.com/dbconnections/signup", payload, headers)
 
-    #render_template('signup.html', title='Sign Up')
+    if form.validate_on_submit():
+        flash('Login requested for user {}, remember_me={}'.format(
+            form.username.data, form.remember_me.data))
+        return redirect('/login')
+    return render_template('signup.html', title='Sign Up', form=form)
 
     #conn = http.client.HTTPSConnection("")
     #payload = "{\"client_id\": \"JdyuTjYXfiV1JkZ7qI8ZtMG79cOGAKdz\",\"email\": \"$('#signup-email').val()\",\"password\": \"$('#signup-password').val()\",\"connection\": \"Username-Password-Authentication\",\"name\": \"$('#name').val()\",\"user_metadata\": {\"color\": \"red\"}}"
@@ -105,6 +112,11 @@ def callback_handling():
 
 @app.route('/login')
 def login():
+    app.logger.debug('this is a DEBUG message')
+    app.logger.info('this is an INFO message')
+    app.logger.warning('this is a WARNING message')
+    app.logger.error('this is an ERROR message')
+    app.logger.critical('this is a CRITICAL message')
     return auth0.authorize_redirect(redirect_uri='http://192.168.33.15/login/callback')
 
 #@app.route('/login/univ')
@@ -138,5 +150,8 @@ def logout():
 
 
 if __name__ == "__main__":
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     app.debug = True
     app.run()

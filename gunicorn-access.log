@@ -1,0 +1,2 @@
+127.0.0.1 - - [02/Nov/2019:18:31:55 -0700] "GET / HTTP/1.1" 404 232 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0"
+127.0.0.1 - - [02/Nov/2019:18:32:00 -0700] "GET /login HTTP/1.1" 302 671 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:70.0) Gecko/20100101 Firefox/70.0"
