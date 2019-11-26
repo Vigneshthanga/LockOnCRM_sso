@@ -12,13 +12,14 @@ from flask import redirect
 from flask import render_template
 from flask import session
 from flask import url_for
-from authlib.flask.client import OAuth
+#from authlib.flask.client import OAuth
+from authlib.integrations.flask_client import OAuth
 from six.moves.urllib.parse import urlencode
 
 import constants
-from auth0.v3.authentication import GetToken
+#from auth0.v3.authentication import GetToken
 
-from auth0.v3.management import Auth0
+#from auth0.v3.management import Auth0
 
 import json
 from six.moves.urllib.request import urlopen
@@ -47,7 +48,7 @@ print("aud: "+AUTH0_AUDIENCE)
 ACCESS_TOKEN = ""
 ID_TOKEN = ""
 
-USER_PERMS = []
+guser_perms=[]
 
 app = Flask(__name__, static_url_path='/public', static_folder='./public')
 app.secret_key = constants.SECRET_KEY
@@ -113,7 +114,6 @@ def get_token_auth_header():
     #headers = {"Access-Control-Allow-Origin", "*"}
 
     auth = request.headers.get('Authorization', None)
-    print("auth: "+auth)
     #auth = request.headers.get("Authorization", None)
     if not auth:
         raise AuthError({"code": "authorization_header_missing",
@@ -196,37 +196,33 @@ def requires_scope(required_scope):
     unverified_claims = jwt.get_unverified_claims(token)
     print("what "+str(unverified_claims))
     user_perm = unverified_claims.get("permissions")
-    global USER_PERMS
-    USER_PERMS = user_perm
-    print(type(user_perm))
+    global guser_perms
     for u in user_perm:
-        print("hola "+u)
+        print("permisions "+u)
+        guser_perms.append(u)
         if (str(u) == required_scope):
             return True
-
-@app.route('/login/authorize')
-def app_authorize():
-    return redirect('/dashboard')
 
 @app.route('/login/callback')
 def callback_handling():
     #auth0.authorize_access_token()
     token = auth0.authorize_access_token()
     #print(token)
+    print('URL: '+str(request.url))
     global ACCESS_TOKEN
     global ID_TOKEN
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15/login/sample/home'
+    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
-        'Authorization': header
+        'Authorization':header
     }
 
     R = requests.get(URL_PATH, headers=HEADERS)
     print("R is:")
-    print(R)
+    #print(R)
     #print(ACCESS_TOKEN)
     resp = auth0.get('userinfo')
     userinfo = resp.json()
@@ -237,16 +233,11 @@ def callback_handling():
         'name': userinfo['name'],
         'picture': userinfo['picture']
     }
-    return redirect('/dashboard')
-
+    return redirect('/login/dashboard')
 
 @app.route('/login')
 def login():
     return auth0.authorize_redirect(redirect_uri=AUTH0_CALLBACK_URL, audience=AUTH0_AUDIENCE)
-
-@app.route('/')
-def home():
-    return render_template('samp_home.html')
 
 @app.route('/login/logout')
 def logout():
@@ -275,17 +266,35 @@ def private_scoped():
     else:
         return render_template('default_403.html')
 
-
 @app.route("/login/twitter")
+def login_twitter():
+		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/twitter/callback", audience=AUTH0_AUDIENCE)
+
+@app.route("/login/twitter/callback")
 @requires_auth
-@requires_authorize
 def check_twitter_scope():
-   up = USER_PERMS
-   for p in p:
-       if str(p) == "read:twitter":
-            redirect('http://0.0.0.0/twitter')
-       else:
-            render_template('default_403.html')
+    print('inside check')
+    token = auth0.authorize_access_token()
+    print(token)
+    global ACCESS_TOKEN
+    global ID_TOKEN
+    ACCESS_TOKEN = token.get('access_token')
+    ID_TOKEN = token.get('id_token')
+    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    header = 'Bearer '+ACCESS_TOKEN
+    print('header: '+header)
+    HEADERS = {
+        'Authorization':header
+    }
+
+    R = requests.get(URL_PATH, headers=HEADERS)
+    global guser_perms 
+    print(guser_perms)
+    for p in guser_perms:
+        print(str(p))
+        if str(p) == "read:twitter":
+            return redirect('http://192.168.33.15/twitter')
+    return render_template('default_403.html')
 
 if __name__ == "__main__":
     #app.run(host='0.0.0.0', port=env.get('PORT', 3000))

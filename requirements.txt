@@ -1,6 +1,5 @@
 flask
 python-dotenv
-requests
 authlib
 six
 alembic==0.8.10
@@ -31,3 +30,6 @@ Werkzeug==0.15.3
 flask_wtf
 wtforms
 git+git://github.com/Vigneshthanga/lockoncrm_common@master
+flask_cors
+python-jose
+requests==2.22.0
