@@ -29,6 +29,8 @@ from flask import Flask, request, jsonify, _request_ctx_stack
 from flask_cors import cross_origin
 from jose import jwt
 
+from flask import Response
+import pdb
 import requests
 
 ENV_FILE = find_dotenv()
@@ -191,39 +193,26 @@ def requires_authorize(f):
     return decorated
 
 def requires_scope(required_scope):
-    print("requires scope")
     token = get_token_auth_header()
     unverified_claims = jwt.get_unverified_claims(token)
-    print("what "+str(unverified_claims))
-    user_perm = unverified_claims.get("permissions")
-    global guser_perms
-    for u in user_perm:
+    guser_perms = unverified_claims.get("permissions")
+    for u in guser_perms:
         print("permisions "+u)
-        guser_perms.append(u)
-        if (str(u) == required_scope):
-            return True
+    return Response(json.dumps(guser_perms), mimetype='application/json')
 
 @app.route('/login/callback')
 def callback_handling():
-    #auth0.authorize_access_token()
     token = auth0.authorize_access_token()
-    #print(token)
-    print('URL: '+str(request.url))
     global ACCESS_TOKEN
     global ID_TOKEN
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
     URL_PATH = 'http://192.168.33.15:80/login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
-    print('header: '+header)
     HEADERS = {
-        'Authorization':header
+        'Authorization': header
     }
-
     R = requests.get(URL_PATH, headers=HEADERS)
-    print("R is:")
-    #print(R)
-    #print(ACCESS_TOKEN)
     resp = auth0.get('userinfo')
     userinfo = resp.json()
 
@@ -259,12 +248,7 @@ def dashboard():
 @cross_origin(headers=["Access-Control-Allow-Origin", "*"])
 @requires_authorize
 def private_scoped():
-    if requires_scope("read:home"):
-        response = "Hello from a private endpoint! You need to be authenticated and have a scope of read:home to see this."
-        print(response)
-        return render_template('samp_home.html')
-    else:
-        return render_template('default_403.html')
+    return requires_scope("read:home")
 
 @app.route("/login/twitter")
 def login_twitter():
@@ -278,21 +262,23 @@ def check_twitter_scope():
     print(token)
     global ACCESS_TOKEN
     global ID_TOKEN
+    global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
     URL_PATH = 'http://192.168.33.15:80/login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
-        'Authorization':header
+        'Authorization': header
     }
-
     R = requests.get(URL_PATH, headers=HEADERS)
-    global guser_perms 
-    print(guser_perms)
-    for p in guser_perms:
+    ls = R.text
+    print("type1: "+str(type(ls)))
+    res = ls.strip('][').split(', ')
+    print(res)
+    for p in res:
         print(str(p))
-        if str(p) == "read:twitter":
+        if (p.find("read:twitter") != -1):
             return redirect('http://192.168.33.15/twitter')
     return render_template('default_403.html')
 
