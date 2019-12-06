@@ -282,6 +282,43 @@ def check_twitter_scope():
             return redirect('http://192.168.33.15/twitter')
     return render_template('default_403.html')
 
+@app.route("/login/ticket")
+def login_ticket():
+		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/ticket/callback", audience=AUTH0_AUDIENCE)
+
+@app.route("/login/ticket/callback")
+@requires_auth
+def check_ticket_scope():
+    print('inside check')
+    token = auth0.authorize_access_token()
+    print(token)
+    global ACCESS_TOKEN
+    global ID_TOKEN
+    global guser_perms
+    ACCESS_TOKEN = token.get('access_token')
+    ID_TOKEN = token.get('id_token')
+    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    header = 'Bearer '+ACCESS_TOKEN
+    print('header: '+header)
+    HEADERS = {
+        'Authorization': header
+    }
+    R = requests.get(URL_PATH, headers=HEADERS)
+    ls = R.text
+    print("type1: "+str(type(ls)))
+    #ur = url_for('ticket/getperms')
+    res = ls.strip('][').split(', ')
+    resp = requests.post('http://192.168.33.15/ticket/getperms', json={"read":"ticket"})
+    if (resp.ok):
+        print('Success !!!')
+    print(res)
+    for p in res:
+        print(str(p))
+        if (p.find("read:ticket") != -1):
+            return redirect('http://192.168.33.15/ticket/login')
+    return render_template('default_403.html')
+
+
 if __name__ == "__main__":
     #app.run(host='0.0.0.0', port=env.get('PORT', 3000))
     app.run()

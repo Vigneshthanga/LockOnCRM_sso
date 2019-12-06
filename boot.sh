@@ -6,4 +6,4 @@ if [ "$SERVICE_URL" != "" ]; then
 fi
 
 # run web server
-exec gunicorn -b 0.0.0.0:5000 --log-level=debug --access-logfile - --error-logfile - app:app --timeout 120 --workers 3
+exec gunicorn -b 0.0.0.0:5000 --log-level=debug --access-logfile - --error-logfile - app:app --timeout 120 --workers 2
