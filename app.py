@@ -37,7 +37,9 @@ ENV_FILE = find_dotenv()
 if ENV_FILE:
     load_dotenv(ENV_FILE)
 
-AUTH0_CALLBACK_URL = env.get(constants.AUTH0_CALLBACK_URL)
+#AUTH0_CALLBACK_URL = env.get(constants.AUTH0_CALLBACK_URL)
+#request.
+#AUTH0_CALLBACK_URL = ''
 AUTH0_CLIENT_ID = env.get(constants.AUTH0_CLIENT_ID)
 AUTH0_CLIENT_SECRET = env.get(constants.AUTH0_CLIENT_SECRET)
 AUTH0_DOMAIN = env.get(constants.AUTH0_DOMAIN)
@@ -207,7 +209,8 @@ def callback_handling():
     global ID_TOKEN
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     HEADERS = {
         'Authorization': header
@@ -226,7 +229,8 @@ def callback_handling():
 
 @app.route('/login')
 def login():
-    return auth0.authorize_redirect(redirect_uri=AUTH0_CALLBACK_URL, audience=AUTH0_AUDIENCE)
+    host_str = request.host_url
+    return auth0.authorize_redirect(redirect_uri=host_str+'login/callback', audience=AUTH0_AUDIENCE)
 
 @app.route('/login/logout')
 def logout():
@@ -252,7 +256,8 @@ def private_scoped():
 
 @app.route("/login/twitter")
 def login_twitter():
-		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/twitter/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host_url 
+		return auth0.authorize_redirect(redirect_uri=host_str+"login/twitter/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/twitter/callback")
 @requires_auth
@@ -265,7 +270,8 @@ def check_twitter_scope():
     global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
@@ -279,12 +285,13 @@ def check_twitter_scope():
     for p in res:
         print(str(p))
         if (p.find("read:twitter") != -1):
-            return redirect('http://192.168.33.15/twitter')
+            return redirect(host_str+'twitter')
     return render_template('403.html')
 
 @app.route("/login/view_tickets")
 def view_ticket():
-		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/view_ticket/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host_url
+		return auth0.authorize_redirect(redirect_uri=host_str+"login/view_ticket/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/view_ticket/callback")
 @requires_auth
@@ -297,7 +304,8 @@ def check_ticket_scope():
     global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
@@ -308,19 +316,21 @@ def check_ticket_scope():
     print("type1: "+str(type(ls)))
     #ur = url_for('ticket/getperms')
     res = ls.strip('][').split(', ')
-    resp = requests.post('http://192.168.33.15/ticket/getperms', json={"read":"ticket"})
+    host_str = request.host_url
+    resp = requests.post(host_str+'ticket/getperms', json={"read":"ticket"})
     if (resp.ok):
         print('Success !!!')
     print(res)
     for p in res:
         print(str(p))
         if (p.find("read:ticket") != -1):
-            return redirect('http://192.168.33.15/ticket/view_tickets')
+            return redirect(host_str+'ticket/view_tickets')
     return render_template('403.html')
 
 @app.route("/login/file_issue")
 def file_ticket():
-		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/file_ticket/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host_url
+		return auth0.authorize_redirect(redirect_uri=host_str+"login/file_ticket/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/file_ticket/callback")
 @requires_auth
@@ -333,7 +343,8 @@ def check_file_ticket_scope():
     global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
@@ -342,21 +353,19 @@ def check_file_ticket_scope():
     R = requests.get(URL_PATH, headers=HEADERS)
     ls = R.text
     print("type1: "+str(type(ls)))
-    #ur = url_for('ticket/getperms')
     res = ls.strip('][').split(', ')
-    #resp = requests.post('http://192.168.33.15/ticket/getperms', json={"read":"ticket"})
-    #if (resp.ok):
-    #    print('Success !!!')
     print(res)
     for p in res:
         print(str(p))
         if (p.find("create:ticket") != -1):
-            return redirect('http://192.168.33.15/ticket/file_issue')
+            host_str = request.host_url
+            return redirect(host_str+'ticket/file_issue')
     return render_template('403.html')
 
 @app.route("/login/invoice")
 def login_invoice():
-		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/invoice/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host_url
+		return auth0.authorize_redirect(redirect_uri=host_str+"login/invoice/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/invoice/callback")
 @requires_auth
@@ -369,7 +378,8 @@ def check_invoice_scope():
     global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
@@ -378,21 +388,18 @@ def check_invoice_scope():
     R = requests.get(URL_PATH, headers=HEADERS)
     ls = R.text
     print("type1: "+str(type(ls)))
-    #ur = url_for('ticket/getperms')
     res = ls.strip('][').split(', ')
-    #resp = requests.post('http://192.168.33.15/ticket/getperms', json={"read":"ticket"})
-    #if (resp.ok):
-    #    print('Success !!!')
     print(res)
     for p in res:
         print(str(p))
-        if (p.find("read:invocie") != -1):
-            return redirect('http://192.168.33.15/invoice')
+        if (p.find("read:invoice") != -1):
+            return redirect(host_str+'invoice')
     return render_template('403.html')
 
 @app.route("/login/customers")
 def customer_ticket():
-		return auth0.authorize_redirect(redirect_uri="http://192.168.33.15/login/customers/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host_url
+		return auth0.authorize_redirect(redirect_uri=host_str+"login/customers/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/customers/callback")
 @requires_auth
@@ -405,7 +412,8 @@ def check_customers_scope():
     global guser_perms
     ACCESS_TOKEN = token.get('access_token')
     ID_TOKEN = token.get('id_token')
-    URL_PATH = 'http://192.168.33.15:80/login/sample/home'
+    host_str = request.host_url
+    URL_PATH = host_str+'login/sample/home'
     header = 'Bearer '+ACCESS_TOKEN
     print('header: '+header)
     HEADERS = {
@@ -414,16 +422,12 @@ def check_customers_scope():
     R = requests.get(URL_PATH, headers=HEADERS)
     ls = R.text
     print("type1: "+str(type(ls)))
-    #ur = url_for('ticket/getperms')
     res = ls.strip('][').split(', ')
-    #resp = requests.post('http://192.168.33.15/ticket/getperms', json={"read":"ticket"})
-    #if (resp.ok):
-    #    print('Success !!!')
     print(res)
     for p in res:
         print(str(p))
         if (p.find("read:customers") != -1):
-            return redirect('http://192.168.33.15/customers')
+            return redirect(host_str+'customers')
     return render_template('403.html')
 
 if __name__ == "__main__":
