@@ -225,12 +225,15 @@ def callback_handling():
         'name': userinfo['name'],
         'picture': userinfo['picture']
     }
-    return redirect('/login/dashboard')
+    host_str = request.host
+    return redirect('https://'+host_str+'/login/dashboard')
 
 @app.route('/login')
 def login():
-    host_str = request.host_url
-    return auth0.authorize_redirect(redirect_uri=host_str+'login/callback', audience=AUTH0_AUDIENCE)
+    host_str = request.host
+    red_uri = "https://"+host_str+"/login/callback"
+    print(red_uri)
+    return auth0.authorize_redirect(redirect_uri=red_uri, audience=AUTH0_AUDIENCE)
 
 @app.route('/login/logout')
 def logout():
