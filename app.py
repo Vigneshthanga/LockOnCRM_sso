@@ -259,8 +259,8 @@ def private_scoped():
 
 @app.route("/login/twitter")
 def login_twitter():
-		host_str = request.host_url 
-		return auth0.authorize_redirect(redirect_uri=host_str+"login/twitter/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host 
+		return auth0.authorize_redirect(redirect_uri="https://"+host_str+"/login/twitter/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/twitter/callback")
 @requires_auth
@@ -285,16 +285,17 @@ def check_twitter_scope():
     print("type1: "+str(type(ls)))
     res = ls.strip('][').split(', ')
     print(res)
+    host_str = request.host
     for p in res:
         print(str(p))
         if (p.find("read:twitter") != -1):
-            return redirect(host_str+'twitter')
+            return redirect("https://"+host_str+'/twitter')
     return render_template('403.html')
 
 @app.route("/login/view_tickets")
 def view_ticket():
-		host_str = request.host_url
-		return auth0.authorize_redirect(redirect_uri=host_str+"login/view_ticket/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host
+		return auth0.authorize_redirect(redirect_uri="https://"+host_str+"/login/view_ticket/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/view_ticket/callback")
 @requires_auth
@@ -324,16 +325,17 @@ def check_ticket_scope():
     if (resp.ok):
         print('Success !!!')
     print(res)
+    host_str = request.host
     for p in res:
         print(str(p))
         if (p.find("read:ticket") != -1):
-            return redirect(host_str+'ticket/view_tickets')
+            return redirect("https://"+host_str+'/ticket/view_tickets')
     return render_template('403.html')
 
 @app.route("/login/file_issue")
 def file_ticket():
-		host_str = request.host_url
-		return auth0.authorize_redirect(redirect_uri=host_str+"login/file_ticket/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host
+		return auth0.authorize_redirect(redirect_uri="https://"+host_str+"/login/file_ticket/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/file_ticket/callback")
 @requires_auth
@@ -358,17 +360,17 @@ def check_file_ticket_scope():
     print("type1: "+str(type(ls)))
     res = ls.strip('][').split(', ')
     print(res)
+    host_str = request.host
     for p in res:
         print(str(p))
         if (p.find("create:ticket") != -1):
-            host_str = request.host_url
-            return redirect(host_str+'ticket/file_issue')
+            return redirect("https://"+host_str+'/ticket/file_issue')
     return render_template('403.html')
 
 @app.route("/login/invoice")
 def login_invoice():
-		host_str = request.host_url
-		return auth0.authorize_redirect(redirect_uri=host_str+"login/invoice/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host
+		return auth0.authorize_redirect(redirect_uri="https://"+host_str+"/login/invoice/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/invoice/callback")
 @requires_auth
@@ -393,16 +395,17 @@ def check_invoice_scope():
     print("type1: "+str(type(ls)))
     res = ls.strip('][').split(', ')
     print(res)
+    host_str = request.host
     for p in res:
         print(str(p))
         if (p.find("read:invoice") != -1):
-            return redirect(host_str+'invoice')
+            return redirect("https://"+host_str+'/invoice')
     return render_template('403.html')
 
 @app.route("/login/customers")
 def customer_ticket():
-		host_str = request.host_url
-		return auth0.authorize_redirect(redirect_uri=host_str+"login/customers/callback", audience=AUTH0_AUDIENCE)
+		host_str = request.host
+		return auth0.authorize_redirect(redirect_uri="https://"+host_str+"/login/customers/callback", audience=AUTH0_AUDIENCE)
 
 @app.route("/login/customers/callback")
 @requires_auth
@@ -427,10 +430,11 @@ def check_customers_scope():
     print("type1: "+str(type(ls)))
     res = ls.strip('][').split(', ')
     print(res)
+    host_str = request.host
     for p in res:
         print(str(p))
         if (p.find("read:customers") != -1):
-            return redirect(host_str+'customers')
+            return redirect("https://"+host_str+'/customers/')
     return render_template('403.html')
 
 if __name__ == "__main__":
